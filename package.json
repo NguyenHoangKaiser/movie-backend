@@ -4,7 +4,25 @@
   "description": "",
   "main": "index.js",
   "type": "module",
+  "nodemonConfig": {
+    "ignore": [
+      "**/test/**",
+      "**/docs/**",
+      ".git",
+      "node_modules/**/node_modules"
+    ],
+    "watch": [
+      "api",
+      "index.js",
+      "server.js"
+    ],
+    "ext": ".ts,.js"
+  },
   "scripts": {
+    "start-watch": "node index.js",
+    "start-server": "nodemon server.js",
+    "start-dev": "npm run start-watch && npm run start-server",
+    "dev": "nodemon",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

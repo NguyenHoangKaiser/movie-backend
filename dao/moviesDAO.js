@@ -1,3 +1,6 @@
+import mongodb from "mongodb";
+const ObjectId = mongodb.ObjectId;
+
 let movies;
 
 export default class MoviesDAO {
@@ -21,7 +24,7 @@ export default class MoviesDAO {
     moviesPerPage = 20,
   } = {}) {
     let query;
-    
+
     if (filters) {
       if ("title" in filters) {
         query = { $text: { $search: filters["title"] } };
@@ -56,6 +59,50 @@ export default class MoviesDAO {
         `Unable to convert cursor to array or problem counting documents, ${e}`
       );
       return { moviesList: [], totalNumMovies: 0 };
+    }
+  }
+
+  //async method to get all movie ratings
+  static async getRatings() {
+    let ratings = [];
+    try {
+      ratings = await movies.distinct("rated");
+      return ratings;
+    } catch (e) {
+      console.error(`Unable to get ratings, ${e}`);
+      return ratings;
+    }
+  }
+
+  static async getMovieByID(id) {
+    try {
+      return await movies
+        .aggregate([
+          {
+            $match: {
+              _id: new ObjectId(id),
+            },
+          },
+          /** $lookup:
+          {
+          from: <collection to join>,
+          localField: <field from the input document>,
+          foreignField: <field from the documents of the "from" collection>,
+          as: <output array field>
+          } */
+          {
+            $lookup: {
+              from: "reviews",
+              localField: "_id",
+              foreignField: "movie_id",
+              as: "reviews",
+            },
+          },
+        ])
+        .next();
+    } catch (e) {
+      console.error(`Something went wrong in getMovieByID: ${e}`);
+      throw e;
     }
   }
 }
